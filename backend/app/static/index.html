@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101715">
+  <title>Personal Automation Server</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%235ed9a0'/%3E%3Cpath d='m18 5-9 13h7l-2 9 10-14h-7z' fill='%23101715'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="/static/styles.css">
+  <script src="/static/app.js" defer></script>
+</head>
+<body>
+  <aside class="sidebar">
+    <a class="brand" href="/" aria-label="Automation home"><span class="brand-icon">ϟ</span><span>Personal<span class="brand-sub">AUTOMATION SERVER</span></span></a>
+    <div class="nav-label">WORKSPACE</div>
+    <nav aria-label="Main navigation">
+      <a class="nav-item" href="#overview"><span>◫</span> Overview</a>
+      <a class="nav-item" href="#launch"><span>▷</span> Run an automation</a>
+      <a class="nav-item" href="#history"><span>◷</span> Task history</a>
+      <a class="nav-item" href="#schedules"><span>↻</span> Schedules</a>
+    </nav>
+    <div class="sidebar-bottom"><span class="small-dot"></span> Your scripts. Your machine.<p>Local workspace · v1.0</p><a href="/docs" target="_blank" rel="noopener">Explore the API ↗</a></div>
+  </aside>
+  <main id="overview">
+    <header class="topbar"><span>WORKSPACE <span class="slash">/</span> Overview</span><div class="connection"><span id="connection-dot" class="small-dot"></span><span id="connection">Connecting…</span><button id="lock" class="text-button" hidden>Lock</button></div></header>
+    <section class="intro"><div><div class="eyebrow">MAKE ROOM FOR WHAT MATTERS</div><h1>A little less manual.</h1><p>Run your scripts, keep an eye on the results, and put repeat work on a schedule.</p></div><a class="button primary" href="#launch">＋ New run</a></section>
+    <section id="auth-panel" class="panel auth-panel" hidden>
+      <h2>Unlock your workspace</h2><p>This server requires an API token. It stays in this tab’s memory until you close or reload it.</p>
+      <form id="auth-form"><label for="token">API token</label><div class="inline-input"><input id="token" type="password" autocomplete="off" required><button class="primary" type="submit">Connect</button></div></form>
+    </section>
+    <div id="notice" role="status" aria-live="polite" hidden></div>
+    <div id="workspace">
+      <section class="stats" aria-label="Task statistics">
+        <article class="stat"><span>Total runs</span><strong id="stat-total">0</strong><small>All recorded activity</small></article>
+        <article class="stat"><span>In progress <span class="small-dot"></span></span><strong id="stat-active">0</strong><small id="worker-caption">Running + queued</small></article>
+        <article class="stat"><span>Completed</span><strong id="stat-completed">0</strong><small>Finished successfully</small></article>
+        <article class="stat"><span>Needs attention</span><strong id="stat-failed">0</strong><small>Failed, timed out, or interrupted</small></article>
+      </section>
+      <div class="launch-grid" id="launch">
+        <section class="panel">
+          <div class="section-heading"><div><div class="eyebrow">START SOMETHING</div><h2>Run an automation</h2></div><span class="tag" id="script-count">0 scripts</span></div>
+          <form id="run-form">
+            <label for="script">Script</label><select id="script" required><option value="">Loading scripts…</option></select>
+            <label for="arguments">Arguments <span class="optional">optional · JSON array</span></label><input id="arguments" value="[]" spellcheck="false" aria-describedby="arguments-help"><p class="field-help" id="arguments-help">Example: ["--min-free-gb", "10"]</p>
+            <div class="form-row"><div><label for="timeout">Timeout (seconds)</label><input id="timeout" type="number" min="1" max="86400" value="300" required></div><div><label for="mode">When to run</label><select id="mode"><option value="now">Right now</option><option value="schedule">On a schedule</option></select></div></div>
+            <div id="schedule-fields" hidden><label for="schedule-name">Schedule name</label><input id="schedule-name" maxlength="100" placeholder="Daily workstation report"><label for="interval">Repeat every (seconds)</label><input id="interval" type="number" min="10" max="31536000" value="3600"><p class="field-help">First run starts after this interval. The server must stay running.</p></div>
+            <button id="run-button" class="primary wide" type="submit">▷ Run script</button>
+          </form>
+        </section>
+        <aside class="panel guide"><div class="guide-icon">↗</div><div class="eyebrow">YOUR FIRST AUTOMATION</div><h2>Start small.<br> Get your time back.</h2><p>Select <code>disk_space.py</code> and click <strong>Run script</strong>. Open its task to see the free space on your disk.</p><ol><li><span>01</span> Add a Python file to <code>scripts/</code>.</li><li><span>02</span> Run it here, with optional arguments.</li><li><span>03</span> Check the output or set it to repeat.</li></ol><div class="guide-note">Scripts run with your user account’s permissions. Add scripts you trust. Output appears when a run finishes.</div></aside>
+      </div>
+      <section class="panel history" id="history">
+        <div class="section-heading"><div><div class="eyebrow">THE PAPER TRAIL</div><h2>Task history</h2></div><label class="sr-only" for="status-filter">Filter tasks by status</label><select id="status-filter"><option value="">All statuses</option><option>PENDING</option><option>RUNNING</option><option>COMPLETED</option><option>FAILED</option><option>TIMED_OUT</option><option>CANCELLED</option><option>INTERRUPTED</option></select></div>
+        <div class="table-scroll"><table><thead><tr><th>Task / script</th><th>Status</th><th>Created</th><th>Duration</th><th><span class="sr-only">Actions</span></th></tr></thead><tbody id="tasks"></tbody></table></div>
+        <div class="empty" id="tasks-empty" hidden><span>◷</span><h3>A clean slate.</h3><p>Your runs will appear here. Start with the test script above.</p></div>
+        <div class="pagination"><span id="page-caption">No tasks yet</span><div><button id="previous" class="secondary" disabled>← Previous</button><button id="next" class="secondary" disabled>Next →</button></div></div>
+      </section>
+      <section class="panel" id="schedules"><div class="section-heading"><div><div class="eyebrow">SET IT IN MOTION</div><h2>Recurring schedules</h2></div><a class="text-link" id="new-schedule" href="#launch">＋ Add schedule</a></div><div id="schedule-list"></div><div id="schedules-empty" class="empty" hidden><span>↻</span><h3>Let repetition take care of itself.</h3><p>Choose “On a schedule” in the run form to create your first recurring automation.</p></div></section>
+      <footer>Built for your everyday automations.<span>Times shown in your local timezone.</span></footer>
+    </div>
+  </main>
+  <dialog id="task-dialog" aria-labelledby="task-title"><div class="dialog-heading"><div><div class="eyebrow" id="task-number"></div><h2 id="task-title">Task details</h2></div><button id="close-dialog" class="secondary" aria-label="Close task details">✕</button></div><div id="task-meta" class="task-meta"></div><div class="log-heading"><h3>Standard output</h3><button id="copy-output" class="text-button">Copy</button></div><pre id="task-stdout" tabindex="0"></pre><h3>Standard error</h3><pre id="task-stderr" tabindex="0"></pre><p class="field-help" id="task-hint"></p><div class="dialog-actions"><button id="cancel-task" class="danger">Cancel task</button><button id="rerun-task" class="primary">Run again</button></div></dialog>
+</body>
+</html>

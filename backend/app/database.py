@@ -1,9 +1,18 @@
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, event
 from sqlalchemy.orm import sessionmaker
-import os
-PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
-DATABASE_PATH = os.path.join(PROJECT_ROOT, "automation.db")
-DATABASE_URL = f"sqlite:///{DATABASE_PATH}"
+from backend.app.models.task import Base
 
-engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+def create_database(path):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    engine = create_engine(
+        "sqlite:///" + str(path), connect_args={"check_same_thread": False, "timeout": 30}
+    )
+
+    @event.listens_for(engine, "connect")
+    def configure_sqlite(connection, _record):
+        connection.execute("PRAGMA journal_mode=WAL")
+        connection.execute("PRAGMA busy_timeout=30000")
+
+    Base.metadata.create_all(engine)
+    return engine, sessionmaker(bind=engine, expire_on_commit=False)
